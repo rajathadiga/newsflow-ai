@@ -37,3 +37,27 @@ export async function getFomoShield(hours: number): Promise<FomoResponse> {
   if (!res.ok) throw new Error("Failed to fetch FOMO shield data");
   return res.json();
 }
+
+export type NewsResult = {
+  title: string;
+  description: string | null;
+  url: string;
+  source_name: string;
+  published_at: string | null;
+};
+
+export type SearchResponse = {
+  query: string;
+  refined_query: string;
+  overview: string | null;
+  results: NewsResult[];
+};
+
+export async function searchNews(query: string): Promise<SearchResponse> {
+  const res = await fetch(
+    `${API_URL}/api/search?q=${encodeURIComponent(query)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) throw new Error("Search failed");
+  return res.json();
+}

@@ -9,8 +9,10 @@ from sqlalchemy.orm import Session
 from database import Base, engine, get_db
 from ingest import ingest_all
 from models import Story
+from news_search import search_news
 from scheduler import start_scheduler
 from schemas import StoryOut
+from summarizer import refine_query, synthesize_overview
 
 Base.metadata.create_all(bind=engine)
 
@@ -62,6 +64,27 @@ def fomo_shield(hours: int = 24, db: Session = Depends(get_db)):
         "low": len(low),
         "estimated_catchup_minutes": catchup_minutes,
         "top_stories": [StoryOut.model_validate(s) for s in top_sorted],
+    }
+
+
+@app.get("/api/search")
+def search(q: str):
+    q = q.strip()
+    if not q:
+        return {"query": q, "refined_query": q, "overview": None, "results": []}
+
+    refined = refine_query(q)
+    results = search_news(refined)
+    if not results and refined != q:
+        results = search_news(q)
+
+    overview = synthesize_overview(q, results)
+
+    return {
+        "query": q,
+        "refined_query": refined,
+        "overview": overview,
+        "results": results,
     }
 
 

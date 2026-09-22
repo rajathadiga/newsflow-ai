@@ -1,66 +1,83 @@
-import Link from "next/link";
+import { ShieldAlert } from "lucide-react";
 import { getFomoShield } from "@/lib/api";
+import StoryCard from "@/components/StoryCard";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 export default async function FomoShieldPage() {
   const data = await getFomoShield(24);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
-      <Link href="/" className="text-sm text-zinc-500 hover:underline">
-        ← Back to Today
-      </Link>
+    <main className="mx-auto w-full max-w-[1680px] flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
+        <div className="relative overflow-hidden bg-[#0e1312] px-4 py-6 text-center text-[#ededec] sm:px-6 sm:py-8">
+          <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 animate-float rounded-full bg-[#fbd509]/10 blur-3xl" />
 
-      <div className="mt-4 rounded-2xl border border-zinc-200 p-6">
-        <h1 className="text-xl font-bold">🛡️ FOMO Shield</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          You were away for {data.hours_away} hours.
-        </p>
-
-        <p className="mt-4 text-sm">
-          We found <strong>{data.total_found}</strong> pieces of content.
-          You only need to know:
-        </p>
-
-        <ul className="mt-3 space-y-1 text-sm">
-          <li>🔴 {data.high} major events</li>
-          <li>🟡 {data.medium} notable developments</li>
-          <li>🟢 {data.low} interesting stories</li>
-        </ul>
-
-        <div className="mt-6 text-center">
-          <p className="text-xs uppercase tracking-wide text-zinc-400">
-            Estimated catch-up time
+          <div className="relative flex justify-center">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fbd509] text-black">
+              <ShieldAlert className="h-5 w-5" strokeWidth={2} />
+            </span>
+          </div>
+          <h1 className="relative mt-2 text-xl font-bold">FOMO Shield</h1>
+          <p className="relative mt-1 text-sm text-stone-400">
+            You were away for {data.hours_away} hours
           </p>
-          <p className="text-3xl font-bold">
-            {data.estimated_catchup_minutes} min
-          </p>
+
+          <div className="relative mt-6">
+            <p className="text-xs tracking-wide text-stone-400 uppercase">
+              Estimated catch-up time
+            </p>
+            <p className="text-4xl font-bold text-[#fbd509] sm:text-5xl">
+              <AnimatedNumber value={data.estimated_catchup_minutes} />
+              <span className="text-lg font-medium text-stone-400"> min</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 divide-x divide-stone-200 dark:divide-stone-800">
+          <div className="p-2.5 text-center sm:p-4">
+            <p className="text-xl font-bold text-rose-500 sm:text-2xl">
+              <AnimatedNumber value={data.high} />
+            </p>
+            <p className="mt-0.5 flex items-center justify-center gap-1 text-[11px] text-stone-500 sm:text-xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> major
+            </p>
+          </div>
+          <div className="p-2.5 text-center sm:p-4">
+            <p className="text-xl font-bold text-amber-500 sm:text-2xl">
+              <AnimatedNumber value={data.medium} />
+            </p>
+            <p className="mt-0.5 flex items-center justify-center gap-1 text-[11px] text-stone-500 sm:text-xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />{" "}
+              notable
+            </p>
+          </div>
+          <div className="p-2.5 text-center sm:p-4">
+            <p className="text-xl font-bold text-emerald-500 sm:text-2xl">
+              <AnimatedNumber value={data.low} />
+            </p>
+            <p className="mt-0.5 flex items-center justify-center gap-1 text-[11px] text-stone-500 sm:text-xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{" "}
+              minor
+            </p>
+          </div>
         </div>
       </div>
 
-      <h2 className="mt-8 mb-3 text-lg font-semibold">Top stories</h2>
-      <ul className="space-y-4">
-        {data.top_stories.map((story) => (
-          <li key={story.id} className="border-b border-zinc-200 pb-4">
-            <a
-              href={story.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium hover:underline"
-            >
-              {story.title}
-            </a>
-            {story.summary && (
-              <p className="mt-1 text-sm text-zinc-600">{story.summary}</p>
-            )}
-            <p className="mt-1 text-xs text-zinc-400">
-              {story.category} · {story.source_name}
-            </p>
-          </li>
+      <p className="mx-auto mt-6 max-w-2xl text-xs text-stone-400">
+        {data.total_found} pieces of content found — showing the top{" "}
+        {data.top_stories.length}.
+      </p>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {data.top_stories.map((story, i) => (
+          <StoryCard key={story.id} story={story} showCategory index={i} />
         ))}
-      </ul>
+      </div>
 
       {data.total_found === 0 && (
-        <p className="text-zinc-500">You&apos;re caught up ✓</p>
+        <div className="mx-auto mt-6 max-w-2xl rounded-xl border border-dashed border-stone-300 p-8 text-center text-sm text-stone-500 dark:border-stone-700">
+          You&apos;re caught up
+        </div>
       )}
     </main>
   );
