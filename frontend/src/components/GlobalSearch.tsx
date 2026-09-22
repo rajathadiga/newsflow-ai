@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Search as SearchIcon, X, Sparkles } from "lucide-react";
 import { searchNews, SearchResponse } from "@/lib/api";
 import { timeAgo } from "@/lib/time";
+import MicButton from "./MicButton";
 
 export default function GlobalSearch() {
   const [query, setQuery] = useState("");
@@ -33,20 +34,29 @@ export default function GlobalSearch() {
     };
   }, []);
 
-  async function runSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) return;
+  async function runSearchFor(text: string) {
+    if (!text.trim()) return;
     setLoading(true);
     setError(null);
     setOpen(true);
     try {
-      const result = await searchNews(query);
+      const result = await searchNews(text);
       setData(result);
     } catch {
       setError("Search failed — is the backend running?");
     } finally {
       setLoading(false);
     }
+  }
+
+  function runSearch(e: React.FormEvent) {
+    e.preventDefault();
+    runSearchFor(query);
+  }
+
+  function onVoiceResult(text: string) {
+    setQuery(text);
+    runSearchFor(text);
   }
 
   return (
@@ -62,27 +72,30 @@ export default function GlobalSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => data && setOpen(true)}
             placeholder="Ask Outside anything..."
-            className="w-full rounded-full border border-stone-200 bg-stone-100/80 py-1.5 pr-14 pl-9 text-sm text-stone-900 outline-none transition-colors focus:border-[#fbd509] focus:bg-white focus:ring-2 focus:ring-[#fbd509]/30 dark:border-white/10 dark:bg-white/5 dark:text-stone-100 dark:focus:bg-[#0e1312] dark:focus:ring-[#fbd509]/20"
+            className="w-full rounded-full border border-stone-200 bg-stone-100/80 py-1.5 pr-20 pl-9 text-sm text-stone-900 outline-none transition-colors focus:border-[#fbd509] focus:bg-white focus:ring-2 focus:ring-[#fbd509]/30 dark:border-white/10 dark:bg-white/5 dark:text-stone-100 dark:focus:bg-[#0e1312] dark:focus:ring-[#fbd509]/20"
           />
-          {!query && (
-            <kbd className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded border border-stone-300 px-1.5 py-0.5 text-[10px] text-stone-400 dark:border-white/10">
-              ⌘K
-            </kbd>
-          )}
-          {query && (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setData(null);
-                setOpen(false);
-              }}
-              aria-label="Clear search"
-              className="absolute top-1/2 right-2.5 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
-            >
-              <X className="h-3.5 w-3.5" strokeWidth={2} />
-            </button>
-          )}
+          <div className="absolute top-1/2 right-2.5 flex -translate-y-1/2 items-center gap-2">
+            <MicButton onResult={onVoiceResult} />
+            {!query && (
+              <kbd className="pointer-events-none rounded border border-stone-300 px-1.5 py-0.5 text-[10px] text-stone-400 dark:border-white/10">
+                ⌘K
+              </kbd>
+            )}
+            {query && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setData(null);
+                  setOpen(false);
+                }}
+                aria-label="Clear search"
+                className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={2} />
+              </button>
+            )}
+          </div>
         </div>
       </form>
 
@@ -123,11 +136,20 @@ export default function GlobalSearch() {
 
               {data.results.length === 0 ? (
                 <p className="px-2 py-4 text-center text-sm text-stone-500">
-                  No live results found. Needs{" "}
-                  <code className="rounded bg-stone-200 px-1 dark:bg-stone-800">
-                    NEWSAPI_KEY
-                  </code>{" "}
-                  set in <code>backend/.env</code>.
+                  {data.configured ? (
+                    <>
+                      No recent articles found for &quot;{data.refined_query}
+                      &quot;. Try a different phrasing or a broader term.
+                    </>
+                  ) : (
+                    <>
+                      Live search needs a{" "}
+                      <code className="rounded bg-stone-200 px-1 dark:bg-stone-800">
+                        NEWSAPI_KEY
+                      </code>{" "}
+                      set in <code>backend/.env</code>.
+                    </>
+                  )}
                 </p>
               ) : (
                 <div className="mt-2 space-y-1">

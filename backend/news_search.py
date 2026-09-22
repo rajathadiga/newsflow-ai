@@ -8,6 +8,10 @@ load_dotenv()
 EVENTREGISTRY_URL = "https://eventregistry.org/api/v1/article/getArticles"
 
 
+def is_configured() -> bool:
+    return bool(os.environ.get("NEWSAPI_KEY"))
+
+
 def search_news(query: str, page_size: int = 15) -> list[dict]:
     """Search live web news via Event Registry. Returns [] if no key is set or the call fails."""
     api_key = os.environ.get("NEWSAPI_KEY")

@@ -71,6 +71,7 @@ export type SearchResponse = {
   refined_query: string;
   overview: string | null;
   results: NewsResult[];
+  configured: boolean;
 };
 
 export async function searchNews(query: string): Promise<SearchResponse> {

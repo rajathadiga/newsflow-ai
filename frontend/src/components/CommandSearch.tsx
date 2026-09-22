@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Search, Sparkles, X } from "lucide-react";
 import { searchNews, SearchResponse } from "@/lib/api";
 import { timeAgo } from "@/lib/time";
+import MicButton from "./MicButton";
 
 const EXAMPLES = [
   "What happened in India today?",
@@ -28,8 +29,15 @@ export default function CommandSearch() {
       }
       if (e.key === "Escape") setOpen(false);
     }
+    function onOpenRequest() {
+      setOpen(true);
+    }
     document.addEventListener("keydown", onKeydown);
-    return () => document.removeEventListener("keydown", onKeydown);
+    document.addEventListener("outside:open-ask", onOpenRequest);
+    return () => {
+      document.removeEventListener("keydown", onKeydown);
+      document.removeEventListener("outside:open-ask", onOpenRequest);
+    };
   }, []);
 
   useEffect(() => {
@@ -86,6 +94,12 @@ export default function CommandSearch() {
                 placeholder="Ask Outside anything…"
                 className="w-full bg-transparent text-sm text-[#ededec] outline-none placeholder:text-stone-500"
               />
+              <MicButton
+                onResult={(text) => {
+                  setQuery(text);
+                  run(text);
+                }}
+              />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -139,7 +153,9 @@ export default function CommandSearch() {
                   )}
                   {data.results.length === 0 ? (
                     <p className="px-1 py-4 text-center text-sm text-stone-500">
-                      No live results — needs a NEWSAPI_KEY configured.
+                      {data.configured
+                        ? `No recent articles found for "${data.refined_query}". Try a different phrasing or a broader term.`
+                        : "Live search needs a NEWSAPI_KEY configured in backend/.env."}
                     </p>
                   ) : (
                     <div className="space-y-1">

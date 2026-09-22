@@ -3,6 +3,7 @@ import { Space_Grotesk, Geist_Mono } from "next/font/google";
 import Header from "@/components/Header";
 import CommandSearch from "@/components/CommandSearch";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import FloatingAskButton from "@/components/FloatingAskButton";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Header />
         {children}
         <MobileBottomNav />
+        <FloatingAskButton />
         <CommandSearch />
       </body>
     </html>

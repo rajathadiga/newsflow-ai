@@ -7,6 +7,7 @@ import { getHoursSinceLastVisitAndStamp } from "@/lib/lastVisit";
 import StoryCard from "@/components/StoryCard";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { Skeleton, StoryCardSkeleton } from "@/components/Skeleton";
+import AudioBriefing from "@/components/AudioBriefing";
 
 function formatAway(hours: number): string {
   if (hours < 1) return `${Math.round(hours * 60)}m`;
@@ -129,10 +130,13 @@ export default function FomoShieldPage() {
 
       {showBriefing && (
         <div className="mx-auto mt-4 max-w-2xl rounded-2xl border border-[#fbd509]/30 bg-[#fbd509]/[0.04] p-4 text-sm text-stone-700 dark:text-stone-300">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-[#fbd509]">
-            <Sparkles className="h-3.5 w-3.5" strokeWidth={2} />
-            Your briefing
-          </p>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-[#fbd509]">
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={2} />
+              Your briefing
+            </p>
+            {briefing && <AudioBriefing text={briefing} />}
+          </div>
           {briefingLoading && (
             <p className="text-stone-400">Putting it together…</p>
           )}

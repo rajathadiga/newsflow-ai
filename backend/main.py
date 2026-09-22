@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from database import Base, engine, get_db
 from ingest import ingest_all
 from models import Story, StoryCluster
-from news_search import search_news
+from news_search import is_configured, search_news
 from scheduler import start_scheduler
 from schemas import ClusterOut, StoryOut
 from summarizer import (
@@ -89,7 +89,13 @@ def fomo_shield(hours: int = 24, db: Session = Depends(get_db)):
 def search(q: str):
     q = q.strip()
     if not q:
-        return {"query": q, "refined_query": q, "overview": None, "results": []}
+        return {
+            "query": q,
+            "refined_query": q,
+            "overview": None,
+            "results": [],
+            "configured": is_configured(),
+        }
 
     refined = refine_query(q)
     results = search_news(refined)
@@ -103,6 +109,7 @@ def search(q: str):
         "refined_query": refined,
         "overview": overview,
         "results": results,
+        "configured": is_configured(),
     }
 
 
