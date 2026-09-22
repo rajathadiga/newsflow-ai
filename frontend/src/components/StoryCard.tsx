@@ -6,6 +6,8 @@ import { Flame } from "lucide-react";
 import { Story } from "@/lib/api";
 import { categoryMeta } from "@/lib/categories";
 import TimeAgo from "./TimeAgo";
+import FollowButton from "./FollowButton";
+import ExplainPanel from "./ExplainPanel";
 
 const IMPORTANCE_RING: Record<number, string> = {
   5: "ring-rose-500/50",
@@ -45,8 +47,8 @@ export default function StoryCard({
       whileTap={{ scale: 0.98 }}
       className="group animate-fade-in-up rounded-2xl border border-stone-200 bg-white p-4 shadow-sm transition-colors hover:border-stone-300 hover:shadow-lg hover:shadow-stone-900/5 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700 dark:hover:shadow-black/30"
     >
-      <a href={story.url} target="_blank" rel="noopener noreferrer">
-        <div className="mb-2 flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
           <span
             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ring-2 ${
               IMPORTANCE_RING[story.importance] ?? "ring-stone-400/50"
@@ -56,7 +58,7 @@ export default function StoryCard({
           </span>
           {showCategory && (
             <span
-              className={`rounded-full px-2 py-0.5 font-medium ${meta.chip}`}
+              className={`shrink-0 rounded-full px-2 py-0.5 font-medium ${meta.chip}`}
             >
               {meta.label}
             </span>
@@ -69,7 +71,16 @@ export default function StoryCard({
             <TimeAgo date={story.published_at} />
           </span>
         </div>
+        <FollowButton storyId={story.id} />
+      </div>
 
+      {story.cluster_id !== null && (
+        <span className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-[#fbd509]/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 uppercase dark:text-[#fbd509]">
+          🟡 Developing
+        </span>
+      )}
+
+      <a href={story.url} target="_blank" rel="noopener noreferrer">
         <h3 className="font-semibold leading-snug text-stone-900 transition-colors group-hover:text-amber-700 dark:text-stone-50 dark:group-hover:text-[#fbd509]">
           {story.title}
         </h3>
@@ -81,16 +92,16 @@ export default function StoryCard({
         )}
       </a>
 
-      <Link
-        href={`/pulse?q=${encodeURIComponent(story.title)}`}
-        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-stone-400 transition-colors hover:text-amber-700 dark:hover:text-[#fbd509]"
-      >
-        <Flame className="h-3 w-3" strokeWidth={2} />
-        See what people are saying
-        <span className="transition-transform group-hover:translate-x-0.5">
-          →
-        </span>
-      </Link>
+      <div className="mt-3 flex items-center justify-between">
+        <Link
+          href={`/pulse?q=${encodeURIComponent(story.title)}`}
+          className="inline-flex items-center gap-1 text-xs font-medium text-stone-400 transition-colors hover:text-amber-700 dark:hover:text-[#fbd509]"
+        >
+          <Flame className="h-3 w-3" strokeWidth={2} />
+          Social Pulse
+        </Link>
+        <ExplainPanel title={story.title} summary={story.summary || ""} />
+      </div>
     </motion.div>
   );
 }

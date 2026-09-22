@@ -61,9 +61,14 @@ export default function GlobalSearch() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => data && setOpen(true)}
-            placeholder="Search any news..."
-            className="w-full rounded-full border border-stone-200 bg-stone-100/80 py-1.5 pr-8 pl-9 text-sm text-stone-900 outline-none transition-colors focus:border-[#fbd509] focus:bg-white focus:ring-2 focus:ring-[#fbd509]/30 dark:border-white/10 dark:bg-white/5 dark:text-stone-100 dark:focus:bg-[#0e1312] dark:focus:ring-[#fbd509]/20"
+            placeholder="Ask Outside anything..."
+            className="w-full rounded-full border border-stone-200 bg-stone-100/80 py-1.5 pr-14 pl-9 text-sm text-stone-900 outline-none transition-colors focus:border-[#fbd509] focus:bg-white focus:ring-2 focus:ring-[#fbd509]/30 dark:border-white/10 dark:bg-white/5 dark:text-stone-100 dark:focus:bg-[#0e1312] dark:focus:ring-[#fbd509]/20"
           />
+          {!query && (
+            <kbd className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded border border-stone-300 px-1.5 py-0.5 text-[10px] text-stone-400 dark:border-white/10">
+              ⌘K
+            </kbd>
+          )}
           {query && (
             <button
               type="button"

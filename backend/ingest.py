@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import feedparser
 from sqlalchemy.exc import IntegrityError
 
+from clustering import cluster_new_stories
 from database import Base, SessionLocal, engine
 from feeds import FEEDS
 from models import Story
@@ -50,6 +51,9 @@ def ingest_all(limit_per_feed: int = 10) -> int:
                 except IntegrityError:
                     db.rollback()
         print(f"[ingest] added {added} new stories")
+        grouped = cluster_new_stories(db)
+        if grouped:
+            print(f"[ingest] grouped {grouped} stories into clusters")
         return added
     finally:
         db.close()

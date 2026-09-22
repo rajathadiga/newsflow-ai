@@ -1,6 +1,10 @@
-import { getStories, Story } from "@/lib/api";
+import { getClusters, getStories, Story } from "@/lib/api";
 import { CATEGORY_ORDER, categoryMeta } from "@/lib/categories";
 import StoryCard from "@/components/StoryCard";
+import StoryIntelligenceCard from "@/components/StoryIntelligenceCard";
+import LiveIndicator from "@/components/LiveIndicator";
+import NewSinceBanner from "@/components/NewSinceBanner";
+import AroundYou from "@/components/AroundYou";
 
 function groupByCategory(stories: Story[]) {
   const groups: Record<string, Story[]> = {};
@@ -27,7 +31,7 @@ function todayLabel() {
 }
 
 export default async function Home() {
-  const stories = await getStories();
+  const [stories, clusters] = await Promise.all([getStories(), getClusters()]);
   const groups = groupByCategory(stories);
   const activeCategories = CATEGORY_ORDER.filter((c) => groups[c]?.length);
 
@@ -37,9 +41,12 @@ export default async function Home() {
         <div className="pointer-events-none absolute -top-24 right-0 h-72 w-72 animate-float rounded-full bg-[#fbd509]/15 blur-3xl" />
 
         <div className="relative px-1 py-6 sm:py-8">
-          <p className="text-xs font-semibold tracking-wide text-amber-700 uppercase dark:text-[#fbd509]">
-            {todayLabel()}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold tracking-wide text-amber-700 uppercase dark:text-[#fbd509]">
+              {todayLabel()}
+            </p>
+            <LiveIndicator count={stories.length} />
+          </div>
           <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
             {greeting()}.
           </h1>
@@ -70,11 +77,30 @@ export default async function Home() {
         </div>
       </div>
 
+      <NewSinceBanner count={stories.length} />
+
       {stories.length === 0 && (
         <div className="rounded-2xl border border-dashed border-stone-300 p-8 text-center text-sm text-stone-500 dark:border-stone-700">
           No stories yet — run the ingestion once from the backend.
         </div>
       )}
+
+      {clusters.length > 0 && (
+        <section className="mb-12">
+          <div className="mb-3 flex items-center gap-2 border-b border-stone-200 pb-2 dark:border-stone-800">
+            <h2 className="text-base font-semibold text-stone-900 dark:text-stone-50">
+              Top Developments
+            </h2>
+          </div>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {clusters.map((cluster, i) => (
+              <StoryIntelligenceCard key={cluster.id} cluster={cluster} index={i} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <AroundYou />
 
       <div className="space-y-12">
         {activeCategories.map((category) => {
@@ -82,9 +108,7 @@ export default async function Home() {
           return (
             <section key={category} id={category} className="scroll-mt-20">
               <div className="mb-3 flex items-center gap-2 border-b border-stone-200 pb-2 dark:border-stone-800">
-                <span
-                  className={`h-2 w-2 rounded-full ${meta.avatar}`}
-                />
+                <span className={`h-2 w-2 rounded-full ${meta.avatar}`} />
                 <h2 className="text-base font-semibold text-stone-900 dark:text-stone-50">
                   {meta.label}
                 </h2>

@@ -13,6 +13,20 @@ class StoryOut(BaseModel):
     importance: int
     published_at: Optional[datetime] = None
     created_at: datetime
+    cluster_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ClusterOut(BaseModel):
+    id: int
+    headline: str
+    synthesis: Optional[str] = None
+    source_count: int
+    article_count: int
+    updated_at: datetime
+    articles: list[StoryOut]
 
     class Config:
         from_attributes = True

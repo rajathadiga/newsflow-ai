@@ -8,11 +8,17 @@ from sqlalchemy.orm import Session
 
 from database import Base, engine, get_db
 from ingest import ingest_all
-from models import Story
+from models import Story, StoryCluster
 from news_search import search_news
 from scheduler import start_scheduler
-from schemas import StoryOut
-from summarizer import refine_query, synthesize_overview
+from schemas import ClusterOut, StoryOut
+from summarizer import (
+    explain_story,
+    extract_claims,
+    refine_query,
+    synthesize_briefing,
+    synthesize_overview,
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -42,6 +48,18 @@ def list_stories(category: Optional[str] = None, db: Session = Depends(get_db)):
     if category:
         query = query.filter(Story.category == category)
     return query.order_by(desc(Story.published_at)).limit(50).all()
+
+
+@app.get("/api/clusters", response_model=List[ClusterOut])
+def list_clusters(db: Session = Depends(get_db)):
+    clusters = (
+        db.query(StoryCluster)
+        .filter(StoryCluster.article_count >= 2)
+        .order_by(desc(StoryCluster.article_count))
+        .limit(10)
+        .all()
+    )
+    return clusters
 
 
 @app.get("/api/fomo")
@@ -86,6 +104,31 @@ def search(q: str):
         "overview": overview,
         "results": results,
     }
+
+
+@app.get("/api/explain")
+def explain(title: str, summary: str = "", depth: str = "simple"):
+    text = explain_story(title, summary, depth)
+    return {"depth": depth, "explanation": text}
+
+
+@app.get("/api/claims")
+def claims(title: str, summary: str = ""):
+    result = extract_claims(title, summary)
+    return {"claims": result}
+
+
+@app.get("/api/briefing")
+def briefing(db: Session = Depends(get_db)):
+    since = datetime.now(timezone.utc) - timedelta(hours=24)
+    stories = db.query(Story).filter(Story.created_at >= since).all()
+
+    by_category: dict[str, list[dict]] = {}
+    for s in stories:
+        by_category.setdefault(s.category, []).append({"title": s.title})
+
+    text = synthesize_briefing(by_category)
+    return {"briefing": text, "story_count": len(stories)}
 
 
 @app.post("/api/ingest")
