@@ -6,6 +6,7 @@ import { Search, Sparkles, X } from "lucide-react";
 import { searchNews, SearchResponse } from "@/lib/api";
 import { timeAgo } from "@/lib/time";
 import MicButton from "./MicButton";
+import { trackSearch, trackView } from "@/lib/history";
 
 const EXAMPLES = [
   "What happened in India today?",
@@ -29,8 +30,11 @@ export default function CommandSearch() {
       }
       if (e.key === "Escape") setOpen(false);
     }
-    function onOpenRequest() {
+    function onOpenRequest(e: Event) {
       setOpen(true);
+      // History page can ask us to re-run a past search.
+      const q = (e as CustomEvent<{ query?: string }>).detail?.query;
+      if (q) run(q);
     }
     document.addEventListener("keydown", onKeydown);
     document.addEventListener("outside:open-ask", onOpenRequest);
@@ -51,6 +55,7 @@ export default function CommandSearch() {
 
   async function run(q: string) {
     if (!q.trim()) return;
+    trackSearch("ask", q);
     setQuery(q);
     setLoading(true);
     try {
@@ -165,6 +170,7 @@ export default function CommandSearch() {
                           href={r.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => trackView("ask", r.title, r.url)}
                           className="block rounded-lg px-3 py-2 transition-colors hover:bg-white/5"
                         >
                           <div className="flex items-center gap-2 text-xs text-stone-500">

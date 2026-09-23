@@ -15,6 +15,10 @@ export type Story = {
 
 export type FomoResponse = {
   hours_away: number;
+  new_since_visit: number;
+  // "today": little was new since the last visit, so these are the day's top stories.
+  // "latest": nothing ingested in 24h, so these are simply the newest stories we have.
+  fallback: "today" | "latest" | null;
   total_found: number;
   high: number;
   medium: number;
@@ -126,4 +130,107 @@ export async function getBriefing(): Promise<BriefingResponse> {
   const res = await fetch(`${API_URL}/api/briefing`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch briefing");
   return res.json();
+}
+
+export type SocialPlatform = "reddit" | "mastodon" | "hackernews";
+
+export type SocialPost = {
+  id: string;
+  platform: SocialPlatform;
+  author: string;
+  author_url: string | null;
+  avatar: string | null;
+  community: string | null;
+  title: string | null;
+  text: string | null;
+  url: string;
+  image: string | null;
+  published_at: string | null;
+  likes: number | null;
+  comments: number | null;
+  shares: number | null;
+};
+
+export type SocialResponse = {
+  query: string;
+  posts: SocialPost[];
+  // per-source outcome: "ok" | "empty" | "rate_limited" | "error"
+  sources: Partial<Record<SocialPlatform, string>>;
+};
+
+export async function getSocial(query: string): Promise<SocialResponse> {
+  const res = await fetch(
+    `${API_URL}/api/social?q=${encodeURIComponent(query)}`,
+    { cache: "no-store" },
+  );
+  if (!res.ok) throw new Error("Social search failed");
+  return res.json();
+}
+
+export type Place = {
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  query: string;
+};
+
+export async function reverseGeocode(lat: number, lon: number): Promise<Place | null> {
+  const res = await fetch(`${API_URL}/api/location?lat=${lat}&lon=${lon}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.place;
+}
+
+export type TrendingResponse = {
+  posts: SocialPost[];
+  tags: string[]; // trending hashtags on Mastodon
+  sources: Partial<Record<SocialPlatform, string>>;
+  updated_at: string;
+};
+
+export async function getTrending(): Promise<TrendingResponse> {
+  const res = await fetch(`${API_URL}/api/social/trending`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Trending fetch failed");
+  return res.json();
+}
+
+export type HistoryKind = "search" | "view";
+
+export type HistoryEntry = {
+  id: number;
+  kind: HistoryKind;
+  source: string;
+  title: string;
+  url: string | null;
+  created_at: string;
+};
+
+export async function addHistory(
+  entry: Omit<HistoryEntry, "id" | "created_at">,
+): Promise<void> {
+  await fetch(`${API_URL}/api/history`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(entry),
+    // keepalive lets the request finish even if the click navigates away.
+    keepalive: true,
+  });
+}
+
+export async function getHistory(kind?: HistoryKind): Promise<HistoryEntry[]> {
+  const res = await fetch(`${API_URL}/api/history${kind ? `?kind=${kind}` : ""}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch history");
+  return res.json();
+}
+
+export async function deleteHistoryEntry(id: number): Promise<void> {
+  await fetch(`${API_URL}/api/history/${id}`, { method: "DELETE" });
+}
+
+export async function clearHistory(): Promise<void> {
+  await fetch(`${API_URL}/api/history`, { method: "DELETE" });
 }

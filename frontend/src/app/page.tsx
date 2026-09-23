@@ -2,7 +2,8 @@ import { getClusters, getStories, Story } from "@/lib/api";
 import { CATEGORY_ORDER, categoryMeta } from "@/lib/categories";
 import StoryCard from "@/components/StoryCard";
 import StoryIntelligenceCard from "@/components/StoryIntelligenceCard";
-import LiveIndicator from "@/components/LiveIndicator";
+import HomeHero from "@/components/HomeHero";
+import { Reveal } from "@/components/motion";
 import NewSinceBanner from "@/components/NewSinceBanner";
 import AroundYou from "@/components/AroundYou";
 
@@ -37,45 +38,21 @@ export default async function Home() {
 
   return (
     <main className="mx-auto w-full max-w-[1680px] flex-1 px-4 py-6 sm:px-6 sm:py-8">
-      <div className="relative mb-10 overflow-hidden rounded-3xl">
-        <div className="pointer-events-none absolute -top-24 right-0 h-72 w-72 animate-float rounded-full bg-[#fbd509]/15 blur-3xl" />
-
-        <div className="relative px-1 py-6 sm:py-8">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold tracking-wide text-amber-700 uppercase dark:text-[#fbd509]">
-              {todayLabel()}
-            </p>
-            <LiveIndicator count={stories.length} />
-          </div>
-          <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-stone-900 sm:text-5xl dark:text-stone-50">
-            {greeting()}.
-          </h1>
-          <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-            Here&apos;s what&apos;s happening —{" "}
-            <span className="font-medium text-stone-800 dark:text-stone-200">
-              {stories.length} stories
-            </span>{" "}
-            across {activeCategories.length} topics.
-          </p>
-
-          {activeCategories.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-2">
-              {activeCategories.map((category) => {
-                const meta = categoryMeta(category);
-                return (
-                  <a
-                    key={category}
-                    href={`#${category}`}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-transform hover:scale-105 ${meta.chip}`}
-                  >
-                    {meta.label} · {groups[category].length}
-                  </a>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+      <HomeHero
+        dateLabel={todayLabel()}
+        greeting={greeting()}
+        storyCount={stories.length}
+        topicCount={activeCategories.length}
+        chips={activeCategories.map((category) => {
+          const meta = categoryMeta(category);
+          return {
+            category,
+            label: meta.label,
+            chip: meta.chip,
+            count: groups[category].length,
+          };
+        })}
+      />
 
       <NewSinceBanner count={stories.length} />
 
@@ -87,11 +64,11 @@ export default async function Home() {
 
       {clusters.length > 0 && (
         <section className="mb-12">
-          <div className="mb-3 flex items-center gap-2 border-b border-stone-200 pb-2 dark:border-stone-800">
+          <Reveal className="mb-3 flex items-center gap-2 border-b border-stone-200 pb-2 dark:border-stone-800">
             <h2 className="text-base font-semibold text-stone-900 dark:text-stone-50">
               Top Developments
             </h2>
-          </div>
+          </Reveal>
           <div className="grid gap-3 lg:grid-cols-2">
             {clusters.map((cluster, i) => (
               <StoryIntelligenceCard key={cluster.id} cluster={cluster} index={i} />
@@ -107,7 +84,7 @@ export default async function Home() {
           const meta = categoryMeta(category);
           return (
             <section key={category} id={category} className="scroll-mt-20">
-              <div className="mb-3 flex items-center gap-2 border-b border-stone-200 pb-2 dark:border-stone-800">
+              <Reveal className="mb-3 flex items-center gap-2 border-b border-stone-200 pb-2 dark:border-stone-800">
                 <span className={`h-2 w-2 rounded-full ${meta.avatar}`} />
                 <h2 className="text-base font-semibold text-stone-900 dark:text-stone-50">
                   {meta.label}
@@ -117,7 +94,7 @@ export default async function Home() {
                 >
                   {groups[category].length}
                 </span>
-              </div>
+              </Reveal>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {groups[category].map((story, i) => (
                   <StoryCard key={story.id} story={story} index={i} />
@@ -129,10 +106,10 @@ export default async function Home() {
       </div>
 
       {stories.length > 0 && (
-        <p className="mt-12 text-center text-sm text-stone-400">
+        <Reveal className="mt-12 text-center text-sm text-stone-400">
           <span className="text-amber-700 dark:text-[#fbd509]">✓</span> You&apos;ve
           reached the end. You&apos;re caught up.
-        </p>
+        </Reveal>
       )}
     </main>
   );

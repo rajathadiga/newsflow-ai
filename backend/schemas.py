@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel
+from typing import Literal, Optional
+from pydantic import BaseModel, Field
 
 
 class StoryOut(BaseModel):
@@ -27,6 +27,21 @@ class ClusterOut(BaseModel):
     article_count: int
     updated_at: datetime
     articles: list[StoryOut]
+
+    class Config:
+        from_attributes = True
+
+
+class HistoryIn(BaseModel):
+    kind: Literal["search", "view"]
+    source: str = Field(max_length=40)
+    title: str = Field(min_length=1, max_length=500)
+    url: Optional[str] = Field(default=None, max_length=1000)
+
+
+class HistoryOut(HistoryIn):
+    id: int
+    created_at: datetime
 
     class Config:
         from_attributes = True

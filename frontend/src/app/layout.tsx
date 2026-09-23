@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import CommandSearch from "@/components/CommandSearch";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import FloatingAskButton from "@/components/FloatingAskButton";
+import { MotionProvider } from "@/components/motion";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -45,11 +46,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col bg-stone-50 pb-16 sm:pb-0 dark:bg-[#0e1312]">
-        <Header />
-        {children}
-        <MobileBottomNav />
-        <FloatingAskButton />
-        <CommandSearch />
+        <MotionProvider>
+          <Header />
+          {children}
+          <MobileBottomNav />
+          <FloatingAskButton />
+          <CommandSearch />
+        </MotionProvider>
       </body>
     </html>
   );

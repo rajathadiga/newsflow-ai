@@ -8,6 +8,8 @@ import { categoryMeta } from "@/lib/categories";
 import TimeAgo from "./TimeAgo";
 import FollowButton from "./FollowButton";
 import ExplainPanel from "./ExplainPanel";
+import { TiltCard, springs } from "./motion";
+import { trackView } from "@/lib/history";
 
 const IMPORTANCE_RING: Record<number, string> = {
   5: "ring-rose-500/50",
@@ -42,11 +44,13 @@ export default function StoryCard({
 
   return (
     <motion.div
-      style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
-      whileHover={{ y: -3 }}
-      whileTap={{ scale: 0.98 }}
-      className="group animate-fade-in-up rounded-2xl border border-stone-200 bg-white p-4 shadow-sm transition-colors hover:border-stone-300 hover:shadow-lg hover:shadow-stone-900/5 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700 dark:hover:shadow-black/30"
+      initial={{ opacity: 0, y: 28, scale: 0.96 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ ...springs.soft, delay: (index % 6) * 0.06 }}
+      className="h-full"
     >
+    <TiltCard className="group h-full rounded-2xl border border-stone-200 bg-white p-4 shadow-sm transition-[border-color,box-shadow] hover:border-stone-300 hover:shadow-xl hover:shadow-stone-900/10 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700 dark:hover:shadow-black/40">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
           <span
@@ -75,12 +79,23 @@ export default function StoryCard({
       </div>
 
       {story.cluster_id !== null && (
-        <span className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-[#fbd509]/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 uppercase dark:text-[#fbd509]">
-          🟡 Developing
-        </span>
+        <motion.span
+          initial={{ scale: 0.6, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={springs.bouncy}
+          className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-[#fbd509]/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-amber-700 uppercase dark:text-[#fbd509]"
+        >
+          <span className="animate-pulse">🟡</span> Developing
+        </motion.span>
       )}
 
-      <a href={story.url} target="_blank" rel="noopener noreferrer">
+      <a
+        href={story.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackView("story", story.title, story.url)}
+      >
         <h3 className="font-semibold leading-snug text-stone-900 transition-colors group-hover:text-amber-700 dark:text-stone-50 dark:group-hover:text-[#fbd509]">
           {story.title}
         </h3>
@@ -97,11 +112,15 @@ export default function StoryCard({
           href={`/pulse?q=${encodeURIComponent(story.title)}`}
           className="inline-flex items-center gap-1 text-xs font-medium text-stone-400 transition-colors hover:text-amber-700 dark:hover:text-[#fbd509]"
         >
-          <Flame className="h-3 w-3" strokeWidth={2} />
+          <Flame
+            className="h-3 w-3 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-125"
+            strokeWidth={2}
+          />
           Social Pulse
         </Link>
         <ExplainPanel title={story.title} summary={story.summary || ""} />
       </div>
+    </TiltCard>
     </motion.div>
   );
 }

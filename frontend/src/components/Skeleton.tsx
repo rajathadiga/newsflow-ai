@@ -1,7 +1,7 @@
 export function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-md bg-stone-200 dark:bg-stone-800 ${className}`}
+      className={`animate-shimmer rounded-md bg-stone-200 dark:bg-stone-800 ${className}`}
     />
   );
 }

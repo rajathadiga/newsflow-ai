@@ -36,9 +36,16 @@ export default function ClaimsPanel({
     <div className="mt-3">
       <button
         onClick={toggle}
-        className="text-xs font-medium text-stone-400 transition-colors hover:text-amber-700 dark:hover:text-[#fbd509]"
+        className="inline-flex items-center gap-1 text-xs font-medium text-stone-400 transition-colors hover:text-amber-700 dark:hover:text-[#fbd509]"
       >
-        {open ? "Hide claims & evidence" : "Claims & evidence ▾"}
+        {open ? "Hide claims & evidence" : "Claims & evidence"}
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="inline-block"
+        >
+          ▾
+        </motion.span>
       </button>
       <AnimatePresence>
         {open && (
@@ -50,7 +57,7 @@ export default function ClaimsPanel({
           >
             <div className="mt-2 space-y-1.5">
               {loading && (
-                <p className="text-xs text-stone-400">Analyzing claims…</p>
+                <p className="animate-pulse text-xs text-stone-400">Analyzing claims…</p>
               )}
               {!loading && claims && claims.length === 0 && (
                 <p className="text-xs text-stone-400">
@@ -59,16 +66,25 @@ export default function ClaimsPanel({
               )}
               {!loading &&
                 claims?.map((c, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm">
-                    <span
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 22, delay: i * 0.08 }}
+                    className="flex items-start gap-2 text-sm"
+                  >
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 15, delay: 0.1 + i * 0.08 }}
                       className={`mt-0.5 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase ${CONFIDENCE_STYLE[c.confidence]}`}
                     >
                       {c.confidence}
-                    </span>
+                    </motion.span>
                     <span className="text-stone-700 dark:text-stone-300">
                       {c.claim}
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
             </div>
           </motion.div>

@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Newspaper, ShieldAlert, Flame } from "lucide-react";
+import { Newspaper, ShieldAlert, Flame, History } from "lucide-react";
 
 const NAV = [
   { href: "/", label: "Today", icon: Newspaper },
   { href: "/fomo", label: "FOMO", icon: ShieldAlert },
   { href: "/pulse", label: "Pulse", icon: Flame },
+  { href: "/history", label: "History", icon: History },
 ];
 
 export default function MobileBottomNav() {
@@ -32,10 +33,16 @@ export default function MobileBottomNav() {
                 transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
               />
             )}
-            <Icon
-              className={`h-5 w-5 ${active ? "text-amber-700 dark:text-[#fbd509]" : "text-stone-400"}`}
-              strokeWidth={2}
-            />
+            <motion.span
+              animate={active ? { y: -2, scale: 1.12 } : { y: 0, scale: 1 }}
+              whileTap={{ scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 500, damping: 18 }}
+            >
+              <Icon
+                className={`h-5 w-5 ${active ? "text-amber-700 dark:text-[#fbd509]" : "text-stone-400"}`}
+                strokeWidth={2}
+              />
+            </motion.span>
             <span
               className={
                 active

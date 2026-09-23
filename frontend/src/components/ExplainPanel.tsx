@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { explainStory, ExplainDepth } from "@/lib/api";
+import { trackView } from "@/lib/history";
 
 const DEPTHS: { key: ExplainDepth; label: string }[] = [
   { key: "30sec", label: "30 sec" },
@@ -18,6 +19,7 @@ export default function ExplainPanel({
   title: string;
   summary: string;
 }) {
+  const pillId = useId();
   const [open, setOpen] = useState(false);
   const [depth, setDepth] = useState<ExplainDepth>("simple");
   const [loading, setLoading] = useState(false);
@@ -49,11 +51,19 @@ export default function ExplainPanel({
           e.stopPropagation();
           const next = !open;
           setOpen(next);
+          if (next) trackView("explain", title, null);
           if (next && !text) pick(depth);
         }}
-        className="text-xs font-medium text-stone-400 transition-colors hover:text-amber-700 dark:hover:text-[#fbd509]"
+        className="inline-flex items-center gap-1 text-xs font-medium text-stone-400 transition-colors hover:text-amber-700 dark:hover:text-[#fbd509]"
       >
-        {open ? "Hide explanation" : "Explain ▾"}
+        {open ? "Hide explanation" : "Explain"}
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="inline-block"
+        >
+          ▾
+        </motion.span>
       </button>
 
       <AnimatePresence>
@@ -73,19 +83,35 @@ export default function ExplainPanel({
                       e.stopPropagation();
                       pick(d.key);
                     }}
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                    className={`relative rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
                       depth === d.key
-                        ? "bg-[#fbd509] text-black"
+                        ? "text-black"
                         : "text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
                     }`}
                   >
-                    {d.label}
+                    {depth === d.key && (
+                      <motion.span
+                        layoutId={`explain-depth-${pillId}`}
+                        className="absolute inset-0 rounded-full bg-[#fbd509]"
+                        transition={{ type: "spring", bounce: 0.25, duration: 0.45 }}
+                      />
+                    )}
+                    <span className="relative">{d.label}</span>
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-sm text-stone-700 dark:text-stone-300">
-                {loading ? "Thinking…" : text || "Explanation unavailable."}
-              </p>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={loading ? "loading" : depth}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                  className={`mt-2 text-sm text-stone-700 dark:text-stone-300 ${loading ? "animate-pulse" : ""}`}
+                >
+                  {loading ? "Thinking…" : text || "Explanation unavailable."}
+                </motion.p>
+              </AnimatePresence>
             </div>
           </motion.div>
         )}

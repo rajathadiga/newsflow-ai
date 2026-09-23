@@ -5,6 +5,7 @@ import { Search as SearchIcon, X, Sparkles } from "lucide-react";
 import { searchNews, SearchResponse } from "@/lib/api";
 import { timeAgo } from "@/lib/time";
 import MicButton from "./MicButton";
+import { trackSearch, trackView } from "@/lib/history";
 
 export default function GlobalSearch() {
   const [query, setQuery] = useState("");
@@ -36,6 +37,7 @@ export default function GlobalSearch() {
 
   async function runSearchFor(text: string) {
     if (!text.trim()) return;
+    trackSearch("search", text);
     setLoading(true);
     setError(null);
     setOpen(true);
@@ -159,6 +161,7 @@ export default function GlobalSearch() {
                       href={r.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackView("search", r.title, r.url)}
                       className="block rounded-xl px-2 py-2 transition-colors hover:bg-stone-100 dark:hover:bg-white/5"
                     >
                       <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">

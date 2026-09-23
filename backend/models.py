@@ -33,3 +33,18 @@ class Story(Base):
 
     cluster_id = Column(Integer, ForeignKey("story_clusters.id"), nullable=True, index=True)
     cluster = relationship("StoryCluster", back_populates="articles")
+
+
+class HistoryEntry(Base):
+    """One thing the user searched for or opened. No accounts yet, so it's a single shared history."""
+
+    __tablename__ = "history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    kind = Column(String(20), nullable=False, index=True)  # "search" | "view"
+    # Where it happened: "search" (header), "ask" (⌘K), "pulse", "pulse_tag",
+    # "story", "cluster", "around_you", "social_post", "explain"
+    source = Column(String(40), nullable=False)
+    title = Column(String(500), nullable=False)  # the query text, or the story/post title
+    url = Column(String(1000), nullable=True)  # set for views
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
